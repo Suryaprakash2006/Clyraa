@@ -4,9 +4,11 @@
   "description": "Handles the requests sent by the client and sends a response in return",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
   "main": "index.js",
+  "type" : "module",
   "scripts": {
+      "start": "nodemon index.js", 
+      "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
