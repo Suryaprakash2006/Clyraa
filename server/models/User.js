@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select : false,
     },
 
     profile: {
@@ -61,4 +62,4 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+export default mongoose.model("User", userSchema);

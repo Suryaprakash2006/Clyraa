@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import connectDB from './utils/db.js';
 dotenv.config({});
 
+import authenticationRouter from './routes/authenticationRouter.js';
+
 const app = express();
 
 //middleware
@@ -16,6 +18,9 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+
+//routes
+app.use("/api/auth", authenticationRouter);
 
 const PORT = process.env.PORT || 8000;
 
