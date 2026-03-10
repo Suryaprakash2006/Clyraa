@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 
-
+// REGISTER
 export const register = async (req, res) => {
   try {
     const { phone, password } = req.body;
@@ -38,6 +38,7 @@ export const register = async (req, res) => {
   }
 }
 
+// LOGIN
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -93,6 +94,8 @@ export const login = async (req, res) => {
   }
 }
 
+
+// LOGOUT
 export const logout = (req, res) => {
   try {
     return res.status(200).clearCookie("token", {
@@ -106,6 +109,8 @@ export const logout = (req, res) => {
   }
 }
 
+
+// UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
     const { name, email, phone, profile } = req.body;

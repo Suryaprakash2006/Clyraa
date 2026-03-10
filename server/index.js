@@ -6,6 +6,7 @@ import connectDB from './utils/db.js';
 dotenv.config({});
 
 import authenticationRouter from './routes/authenticationRouter.js';
+import postRoutes from './routes/postRouter.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(cors(corsOptions));
 
 //routes
 app.use("/api/auth", authenticationRouter);
+app.use("/api/posts", postRoutes);
 
 const PORT = process.env.PORT || 8000;
 
