@@ -6,12 +6,15 @@ const communitySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
+      unique: true,
     },
 
     location: {
       type: String,
       required: true,
-      index: true,  
+      index: true,
+      trim : true,  
     },
 
     admin: {
