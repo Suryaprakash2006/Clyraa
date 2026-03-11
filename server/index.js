@@ -7,6 +7,7 @@ dotenv.config({});
 
 import authenticationRouter from './routes/authenticationRouter.js';
 import postRoutes from './routes/postRouter.js';
+import commentRoutes from './routes/commentRouter.js';
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(cors(corsOptions));
 //routes
 app.use("/api/auth", authenticationRouter);
 app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoutes);
 
 const PORT = process.env.PORT || 8000;
 
