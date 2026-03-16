@@ -1,62 +1,69 @@
 import mongoose from "mongoose";
 
 const tripSchema = new mongoose.Schema(
-  {
-    groupId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Group",
-      required: true,
-    },
-
-    budget: {
-      type: Number,
-      default: 0,
-    },
-
-    source: String,
-    destination: String,
-
-    mode: {
-      type: String,
-      enum: ["bike", "car", "solo", "train", "flight"],
-    },
-
-    days: Number,
-
-    tripStarted: {
-      type: Boolean,
-      default: false,
-    },
-
-    stops: [
-      {
-        name: String,
-        reason: String,
-        reached: {
-          type: Boolean,
-          default: false,
-        },
-      },
-    ],
-
-    expenses: [
-      {
-        amount: Number,
-        reason: String,
-        paidBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+{
+  groupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Group",
+    required: true,
+    index: true
   },
-  {
-    timestamps: true,
-  }
+
+  budget: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+
+  source: {
+    type: String,
+    trim: true
+  },
+
+  destination: {
+    type: String,
+    trim: true
+  },
+
+  mode: {
+    type: String,
+    enum: ["bike", "car", "solo", "train", "flight"]
+  },
+
+  days: Number,
+
+  tripStarted: {
+    type: Boolean,
+    default: false
+  },
+
+  stops: [
+    {
+      name: String,
+      reason: String,
+      reached: {
+        type: Boolean,
+        default: false
+      }
+    }
+  ],
+
+  expenses: [
+    {
+      amount: Number,
+      reason: String,
+      paidBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
+},
+{ timestamps: true }
 );
 
 export default mongoose.model("Trip", tripSchema);
