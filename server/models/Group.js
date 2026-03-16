@@ -4,6 +4,7 @@ const groupSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
 
     admin: {
@@ -16,6 +17,7 @@ const groupSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        index: true,
       },
     ],
   },
