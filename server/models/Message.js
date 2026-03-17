@@ -19,15 +19,12 @@ const messageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      index: true
-    },
   },
   {
     timestamps: true,
   }
 );
+
+messageSchema.index({ groupId: 1, createdAt: 1 });
 
 export default mongoose.model("Message", messageSchema);
