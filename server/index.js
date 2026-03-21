@@ -4,8 +4,10 @@ import { Server } from "socket.io";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import jwt from "jsonwebtoken"; // 🔥 NEW
+import jwt from "jsonwebtoken";
+import cookie from "cookie";
 import connectDB from './utils/db.js';
+
 dotenv.config({});
 
 import authenticationRouter from './routes/authenticationRouter.js';
@@ -21,22 +23,24 @@ import Group from "./models/Group.js";
 
 const app = express();
 
-//middleware
+// middleware
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:5173",
+  process.env.FRONTEND_URL
 ];
 
 const corsOptions = {
   origin: allowedOrigins,
   credentials: true,
 };
+
 app.use(cors(corsOptions));
 
-//routes
+// routes
 app.use("/api/auth", authenticationRouter);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
@@ -55,7 +59,7 @@ const io = new Server(server, {
 });
 
 
-// SOCKET JWT AUTH MIDDLEWARE
+//SOCKET JWT AUTH MIDDLEWARE
 io.use((socket, next) => {
   try {
     const cookieHeader = socket.handshake.headers.cookie;
@@ -64,19 +68,16 @@ io.use((socket, next) => {
       return next(new Error("No cookies found"));
     }
 
-    const cookies = Object.fromEntries(
-      cookieHeader.split("; ").map(c => c.split("="))
-    );
-
+    const cookies = cookie.parse(cookieHeader);
     const token = cookies.token;
 
     if (!token) {
       return next(new Error("No token provided"));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-    socket.user = decoded; // attach user
+    socket.user = decoded;
 
     next();
   } catch (error) {
@@ -86,14 +87,20 @@ io.use((socket, next) => {
 });
 
 
+const lastMessageTime = new Map();
+
 io.on("connection", (socket) => {
 
-  const userId = socket.user.userId; //use verified user
+  const userId = socket.user.userId;
 
   console.log("User connected:", socket.id, "userId:", userId);
 
   socket.on("join_group", async (groupId) => {
     try {
+      if (!groupId) {
+        return socket.emit("error", "Invalid group ID");
+      }
+
       const group = await Group.findById(groupId);
 
       if (!group) {
@@ -113,11 +120,29 @@ io.on("connection", (socket) => {
 
     } catch (error) {
       console.log("Join group error:", error);
+      socket.emit("error", "Failed to join group");
     }
   });
 
   socket.on("send_message", async ({ groupId, message }) => {
     try {
+      if (!groupId || !message || message.trim() === "") {
+        return socket.emit("error", "Invalid message data");
+      }
+
+      if (message.length > 500) {
+        return socket.emit("error", "Message too long");
+      }
+
+      const now = Date.now();
+      const lastTime = lastMessageTime.get(socket.id) || 0;
+
+      if (now - lastTime < 500) {
+        return;
+      }
+
+      lastMessageTime.set(socket.id, now);
+
       const group = await Group.findById(groupId);
 
       if (!group) {
@@ -138,15 +163,22 @@ io.on("connection", (socket) => {
         text: message,
       });
 
-      io.to(groupId).emit("receive_message", newMessage);
+      const populatedMessage = await newMessage.populate(
+        "senderId",
+        "name profilePic"
+      );
+
+      io.to(groupId).emit("receive_message", populatedMessage);
 
     } catch (error) {
       console.log("Send message error:", error);
+      socket.emit("error", "Failed to send message");
     }
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+    lastMessageTime.delete(socket.id);
   });
 });
 
