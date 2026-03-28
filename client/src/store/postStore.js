@@ -83,25 +83,25 @@ export const usePostStore = create((set, get) => ({
   },
 
   likePost: async (postId) => {
-    try {
-      const res = await api.post(`/posts/${postId}/like`);
+  try {
+    const res = await api.post(`/posts/${postId}/like`);
 
-      set((state) => ({
-        posts: state.posts.map((p) =>
-          p._id === postId
-            ? {
-                ...p,
-                likes: Array(res.data.likes).fill("temp"),
-              }
-            : p
-        ),
-      }));
+    set((state) => ({
+      posts: state.posts.map((p) =>
+        p._id === postId
+          ? {
+              ...p,
+              likes: res.data.likes, // ✅ real users
+            }
+          : p
+      ),
+    }));
 
-      return res.data;
-    } catch (error) {
-      throw error;
-    }
-  },
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+},
 
   clearCurrentPost: () => set({ currentPost: null }),
 }));

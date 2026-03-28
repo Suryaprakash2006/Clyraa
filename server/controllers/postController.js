@@ -45,6 +45,7 @@ export const getPosts = async (req, res) => {
     const posts = await Post.find()
       .populate("postedBy", "name profile.profilePic")
       .populate("communityId", "name location")
+      .populate("likes", "name profile.profilePic")
       .sort({ createdAt: -1 });  // latest posts first if we sort by createdAt in descending order else it will be in ascending order (oldest posts first)
 
     res.status(200).json({
@@ -199,9 +200,11 @@ export const likePost = async (req, res) => {
 
     await post.save();
 
+    await post.populate("likes", "name profile.profilePic");
+
     res.status(200).json({
       message: alreadyLiked ? "Post unliked" : "Post liked",
-      likes: post.likes.length,
+      likes: post.likes,
       success: true
     });
 

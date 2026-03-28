@@ -21,6 +21,7 @@ export const addComment = async (req, res) => {
 
     await newComment.save();
 
+    await newComment.populate("userId", "name profile.profilePic");
     res.status(201).json({
       message: "Comment added",
       comment: newComment,
