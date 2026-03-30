@@ -213,3 +213,64 @@ export const likePost = async (req, res) => {
     res.status(500).json({ message: "Server error", success: false });
   }
 };
+
+//Add to Community
+export const addToCommunity = async (req, res) => {
+  try {
+    const { id } = req.params; // post id
+    const { communityId } = req.body; // community id to add the post to
+
+    const post = await Post.findById(id);
+
+    if (!post) {  
+      return res.status(404).json({
+        message: "Post not found",
+        success: false
+      });
+    }
+
+    // only owner can add to community
+    if (post.postedBy.toString() !== req.user.userId) {
+      return res.status(403).json({
+        message: "You are not allowed to add this post to a community",
+        success: false
+      });
+    }
+
+    post.communityId = communityId;
+
+    await post.save();
+    
+    res.status(200).json({
+      message: "Post added to community successfully",
+      post,
+      success: true
+    });
+
+  } catch (error) {
+    console.error("Add to Community Error:", error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+// GET POSTS BY COMMUNITY
+export const getCommunityPosts = async (req, res) => {
+  try {
+    const { communityId } = req.params;
+
+    const posts = await Post.find({ communityId })
+      .populate("postedBy", "name profile.profilePic")
+      .populate("communityId", "name location")
+      .populate("likes", "name profile.profilePic")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      posts,
+      success: true
+    });
+
+  } catch (error) {
+    console.error("Get Community Posts Error:", error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};

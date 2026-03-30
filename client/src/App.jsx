@@ -9,6 +9,7 @@ import Feed from './pages/feed';
 import Register from './pages/register';
 import Profile from './pages/profile';
 import Communities from './pages/communities';
+import CommunityDetails from './pages/communityDetails';
 import Groups from './pages/groups';
 // import TripDashboard from './pages/tripDashboard';
 
@@ -39,6 +40,9 @@ function App() {
           } />
           <Route path="/communities" element={
             <ProtectedRoute><Communities /></ProtectedRoute>
+          } />
+          <Route path="/community/:id" element={
+            <ProtectedRoute><CommunityDetails /></ProtectedRoute>
           } />
           <Route path="/groups" element={
             <ProtectedRoute><Groups /></ProtectedRoute>

@@ -33,6 +33,19 @@ export const usePostStore = create((set, get) => ({
     }
   },
 
+  fetchPostsByCommunity: async (communityId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await api.get(`/posts/community/${communityId}`);
+      set({ posts: res.data.posts, isLoading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch community posts",
+        isLoading: false,
+      });
+    }
+  },
+
   createPost: async (content, images, location, communityId) => {
     try {
       const res = await api.post("/posts", {
