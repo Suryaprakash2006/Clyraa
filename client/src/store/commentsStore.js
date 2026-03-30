@@ -2,7 +2,7 @@ import { create } from "zustand";
 import api from "../api/axios";
 
 export const useCommentStore = create((set, get) => ({
-  comments: [],
+  comments: {},
   isLoading: false,
   error: null,
 
@@ -10,7 +10,12 @@ export const useCommentStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await api.get(`/comments/${postId}`);
-      set({ comments: res.data.comments, isLoading: false });
+      set((state) => ({
+        comments: {
+          ...state.comments,
+          [postId]: res.data.comments,
+        },
+      }));
     } catch (error) {
       set({
         isLoading: false,
@@ -24,8 +29,14 @@ export const useCommentStore = create((set, get) => ({
       const res = await api.post("/comments", { postId, text });
 
       set((state) => ({
-        comments: [res.data.comment, ...state.comments],
-      }));
+  comments: {
+    ...state.comments,
+    [postId]: [
+      res.data.comment,
+      ...(state.comments[postId] || []),
+    ],
+  },
+}));
 
       return res.data;
     } catch (error) {
@@ -33,33 +44,43 @@ export const useCommentStore = create((set, get) => ({
     }
   },
 
-  deleteComment: async (commentId) => {
+  deleteComment: async (postId , commentId) => {
     try {
       await api.delete(`/comments/${commentId}`);
 
       set((state) => ({
-        comments: state.comments.filter((c) => c._id !== commentId),
-      }));
+    comments: {
+      ...state.comments,
+      [postId]: state.comments[postId].filter(
+        (c) => c._id !== commentId
+      ),
+    },
+  }));
     } catch (error) {
       throw error;
     }
   },
 
-  updateComment: async (commentId, text) => {
-    try {
-      const res = await api.put(`/comments/${commentId}`, { text });
+  updateComment: async (postId, commentId, text) => {
+  try {
+    console.log("Updating comment:", commentId, text);
 
-      set((state) => ({
-        comments: state.comments.map((c) =>
+    const res = await api.put(`/comments/${commentId}`, { text });
+
+    set((state) => ({
+      comments: {
+        ...state.comments,
+        [postId]: (state.comments[postId] || []).map((c) =>
           c._id === commentId ? res.data.comment : c
         ),
-      }));
+      },
+    }));
 
-      return res.data;
-    } catch (error) {
-      throw error;
-    }
-  },
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+},
 
-  clearComments: () => set({ comments: [] }),
+  clearComments: () => set({ comments: {} }),
 }));
