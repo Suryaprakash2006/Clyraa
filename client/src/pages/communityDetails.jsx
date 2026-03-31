@@ -83,55 +83,86 @@ const CommunityDetails = () => {
   return (
     <div className="min-h-screen pb-12 animate-in fade-in duration-500">
       {/* Banner Section */}
-      <div className="relative w-full h-80 lg:h-96 rounded-b-3xl overflow-hidden shadow-2xl">
-        <img 
-          src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Taj_Mahal_%28Edited%29.jpeg" 
-          alt="Community Banner" 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
-        
-        <button 
-          onClick={() => navigate(-1)} 
-          className="absolute top-6 left-6 p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all"
-        >
-          <ArrowLeft className="w-6 h-6" />
-        </button>
+      <div className="relative w-full rounded-b-3xl overflow-hidden shadow-2xl">
+  {/* Image with subtle zoom on hover */}
+  <div className="relative w-full h-72 sm:h-80 lg:h-[26rem] group">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Taj_Mahal_%28Edited%29.jpeg"
+      alt="Community Banner"
+      className="w-full h-full object-cover scale-[1.04] group-hover:scale-100 transition-transform duration-[6000ms] ease-out"
+    />
 
-        <div className="absolute bottom-0 left-0 w-full p-6 lg:p-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div className="text-white space-y-3 max-w-2xl">
-            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight drop-shadow-lg">{currentCommunity.name}</h1>
-            <div className="flex items-center gap-4 text-sm font-medium">
-              <span className="flex items-center gap-1 bg-brand-cyan/20 px-3 py-1 rounded-full border border-brand-cyan/30 backdrop-blur-sm">
-                <MapPin className="w-4 h-4 text-brand-cyan" /> {currentCommunity.location}
-              </span>
-              <span className="flex items-center gap-1 bg-white/10 px-3 py-1 rounded-full border border-white/20 backdrop-blur-sm">
-                <Users className="w-4 h-4" /> Community
-              </span>
-            </div>
-            <p className="text-gray-200 mt-2 text-base lg:text-lg opacity-90">{currentCommunity.description}</p>
-          </div>
+    {/* Richer gradient: vertical depth + side vignette */}
+    <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.55)_40%,rgba(0,0,0,0.15)_70%,rgba(0,0,0,0.1)_100%)]" />
+    <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.3)_0%,transparent_30%,transparent_70%,rgba(0,0,0,0.25)_100%)]" />
 
-          <div className="flex-shrink-0">
-            <button
-              onClick={handleJoin}
-              disabled={isMember}
-              className={`px-8 py-3 rounded-full font-bold text-lg transition-all shadow-lg backdrop-blur-md ${
-                isMember
-                  ? 'bg-white/10 text-white cursor-not-allowed border border-white/20'
-                  : 'bg-brand-cyan text-white hover:bg-brand-cyan/90 hover:scale-105 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]'
-              }`}
-            >
-              {isMember ? 'Joined' : 'Join Community'}
-            </button>
-          </div>
+    {/* Back button */}
+    <button
+      onClick={() => navigate(-1)}
+      className="absolute top-5 left-5 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white hover:bg-white/20 hover:-translate-x-0.5 hover:shadow-lg transition-all duration-200 z-10"
+    >
+      <ArrowLeft className="w-[18px] h-[18px]" />
+    </button>
+
+    {/* Bottom content */}
+    <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7 lg:p-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6">
+
+      {/* Text block */}
+      <div className="text-white flex-1 min-w-0 space-y-2.5">
+
+        {/* Eyebrow breadcrumb */}
+        <div className="flex items-center gap-1.5 text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-white/40">
+          <span>Explore</span>
+          <span className="w-1 h-1 rounded-full bg-white/30" />
+          <span>Communities</span>
+          <span className="w-1 h-1 rounded-full bg-white/30" />
+          <span>Culture & Heritage</span>
         </div>
+
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] drop-shadow-xl truncate">
+          {currentCommunity.name}
+        </h1>
+
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+          <span className="inline-flex items-center gap-1.5 bg-brand-cyan/15 px-3 py-1 rounded-full border border-brand-cyan/35 backdrop-blur-sm text-brand-cyan text-xs font-semibold">
+            <MapPin className="w-3.5 h-3.5" /> {currentCommunity.location}
+          </span>
+          <span className="inline-flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/20 backdrop-blur-sm text-white/80 text-xs font-semibold">
+            <Users className="w-3.5 h-3.5" /> Community
+          </span>
+        </div>
+
+        <p className="text-sm sm:text-base text-gray-200/85 leading-relaxed max-w-xl line-clamp-2">
+          {currentCommunity.description}
+        </p>
       </div>
+
+      {/* Join button */}
+      <div className="flex-shrink-0 flex flex-col items-start sm:items-end gap-1.5">
+        <button
+          onClick={handleJoin}
+          disabled={isMember}
+          className={`relative overflow-hidden px-7 py-2.5 rounded-full font-bold text-sm sm:text-base tracking-wide transition-all duration-200
+            ${isMember
+              ? 'bg-white/10 text-white/70 cursor-not-allowed border border-white/20 backdrop-blur-md'
+              : 'bg-brand-cyan text-white hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_6px_28px_rgba(34,211,238,0.45),0_0_0_3px_rgba(34,211,238,0.15)] active:scale-100'
+            }`}
+        >
+          {/* Shimmer on hover */}
+          {!isMember && (
+            <span className="absolute inset-0 bg-[linear-gradient(105deg,transparent_40%,rgba(255,255,255,0.25)_50%,transparent_60%)] -translate-x-full hover:translate-x-full transition-transform duration-500 pointer-events-none" />
+          )}
+          {isMember ? '✓ Joined' : 'Join Community'}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* Main Content: Posts */}
       <div className="max-w-7xl mx-auto px-4 lg:px-6 mt-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 border-l-4 border-brand-cyan pl-3">Community Posts</h2>
+          <h2 className="text-2xl font-bold text-white dark:text-brand-cyan border-l-4 border-brand-cyan pl-3">Community Posts</h2>
           <span className="text-slate-500 font-medium">{posts.length} {posts.length === 1 ? 'Post' : 'Posts'}</span>
         </div>
 
