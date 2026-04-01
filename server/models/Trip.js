@@ -61,6 +61,40 @@ const tripSchema = new mongoose.Schema(
         default: Date.now
       }
     }
+  ],
+
+  tripCompleted: {
+    type: Boolean,
+    default: false
+  },
+
+  packingList: [
+    {
+      item: String,
+      isPacked: {
+        type: Boolean,
+        default: false
+      },
+      addedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }
+  ],
+
+  notes: [
+    {
+      title: String,
+      content: String,
+      addedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
   ]
 },
 { timestamps: true }

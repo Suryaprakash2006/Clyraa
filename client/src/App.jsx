@@ -11,7 +11,7 @@ import Profile from './pages/profile';
 import Communities from './pages/communities';
 import CommunityDetails from './pages/communityDetails';
 import Groups from './pages/groups';
-// import TripDashboard from './pages/tripDashboard';
+import TripDashboard from './pages/tripDashboard';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -47,9 +47,9 @@ function App() {
           <Route path="/groups" element={
             <ProtectedRoute><Groups /></ProtectedRoute>
           } />
-          {/* <Route path="/groups/:groupId/trip" element={
+          <Route path="/groups/:groupId/trip/:tripId?" element={
             <ProtectedRoute><TripDashboard /></ProtectedRoute>
-          } />  */}
+          } /> 
         </Route>
       </Routes>
     </>

@@ -192,3 +192,38 @@ export const leaveGroup = async (req, res) => {
     res.status(500).json({ message: "Server error", success: false });
   }
 };
+
+// Delete group (Admin only)
+export const deleteGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        message: "Group not found",
+        success: false
+      });
+    }
+
+    // check admin
+    if (group.admin.toString() !== req.user.userId) {
+      return res.status(403).json({
+        message: "Only admin can delete the group",
+        success: false
+      });
+    }
+
+    await Group.findByIdAndDelete(groupId);
+
+    res.status(200).json({
+      message: "Group deleted successfully",
+      success: true
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};

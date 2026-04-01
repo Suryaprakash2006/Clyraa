@@ -88,6 +88,20 @@ export const useGroupStore = create((set, get) => ({
     }
   },
 
+  deleteGroup: async (groupId) => {
+    try {
+      await api.delete(`/groups/${groupId}`);
+
+      set((state) => ({
+        groups: state.groups.filter((g) => g._id !== groupId),
+        activeGroup:
+          state.activeGroup?._id === groupId ? null : state.activeGroup,
+      }));
+    } catch (error) {
+      throw error;
+    }
+  },
+
   setActiveGroup: (group) => set({ activeGroup: group }),
 
   fetchMessages: async (groupId) => {

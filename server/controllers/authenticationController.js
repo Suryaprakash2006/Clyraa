@@ -1,4 +1,6 @@
 import User from "../models/User.js";
+import Community from "../models/Community.js";
+import Post from "../models/Post.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -72,6 +74,8 @@ export const login = async (req, res) => {
       profile: user.profile,
       communitiesJoined: user.communitiesJoined,
       savedPosts: user.savedPosts,
+      followers: user.followers,
+      following: user.following,
     };
 
     return res
@@ -145,3 +149,192 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Server error", success: false });
   }
 }
+
+// SEARCH USERS
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim() === "") {
+      return res.status(200).json({ users: [], success: true });
+    }
+
+    // Escape regex characters to prevent ReDoS
+    const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, "i");
+
+    const users = await User.find({
+      $or: [
+        { name: { $regex: regex } },
+        { email: { $regex: regex } },
+      ]
+    }).select("_id name email profile.profilePic");
+
+    res.status(200).json({ users, success: true });
+  } catch (error) {
+    console.error("Error in searchUsers controller: ", error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+
+// GET USER PROFILE
+export const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const user = await User.findById(id)
+      .populate("followers", "name profile.profilePic")
+      .populate("following", "name profile.profilePic")
+      .populate("communitiesJoined", "name location description")
+      .populate({
+        path: "savedPosts",
+        populate: [
+          { path: "postedBy", select: "name profile.profilePic" },
+          { path: "communityId", select: "name" }
+        ]
+      });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+
+    const totalPosts = await Post.countDocuments({ postedBy: id });
+    const totalCommunities = await Community.countDocuments({ admin: id });
+    
+    const uploadedPosts = await Post.find({ postedBy: id })
+      .populate("postedBy", "name profile.profilePic")
+      .populate("communityId", "name location")
+      .populate("likes", "name profile.profilePic")
+      .sort({ createdAt: -1 });
+
+    const communitiesCreated = await Community.find({ admin: id })
+      .populate("admin", "name profile.profilePic");
+
+    res.status(200).json({
+      user,
+      stats: {
+        totalPosts,
+        totalCommunities
+      },
+      uploadedPosts,
+      communitiesCreated,
+      success: true
+    });
+  } catch (error) {
+    console.error("Error in getUserProfile controller: ", error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+
+// TOGGLE FOLLOW
+export const toggleFollow = async (req, res) => {
+  try {
+    const { id: targetUserId } = req.params;
+    const activeUserId = req.user.userId;
+
+    if (targetUserId === activeUserId) {
+      return res.status(400).json({ message: "You cannot follow yourself", success: false });
+    }
+
+    const activeUser = await User.findById(activeUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!activeUser || !targetUser) {
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+
+    const isFollowing = activeUser.following.includes(targetUserId);
+
+    if (isFollowing) {
+      activeUser.following = activeUser.following.filter(id => id.toString() !== targetUserId);
+      targetUser.followers = targetUser.followers.filter(id => id.toString() !== activeUserId);
+    } else {
+      activeUser.following.push(targetUserId);
+      targetUser.followers.push(activeUserId);
+    }
+
+    await activeUser.save();
+    await targetUser.save();
+
+    res.status(200).json({ 
+      message: isFollowing ? "Unfollowed successfully" : "Followed successfully",
+      isFollowing: !isFollowing,
+      success: true 
+    });
+
+  } catch (error) {
+    console.error("Error in toggleFollow controller: ", error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+
+// CHANGE PASSWORD
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.userId;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "All fields are required", success: false });
+    }
+
+    const user = await User.findById(userId).select("+password");
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect current password", success: false });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully", success: true });
+
+  } catch (error) {
+    console.error("Error in changePassword controller: ", error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+
+// TOGGLE SAVE POST
+export const toggleSavePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+
+    const postExists = await Post.findById(postId);
+    if (!postExists) {
+      return res.status(404).json({ message: "Post not found", success: false });
+    }
+
+    const isSaved = user.savedPosts.includes(postId);
+
+    if (isSaved) {
+      user.savedPosts = user.savedPosts.filter(id => id.toString() !== postId);
+    } else {
+      user.savedPosts.push(postId);
+    }
+
+    await user.save();
+    
+    res.status(200).json({ 
+      message: isSaved ? "Post unsaved" : "Post saved",
+      isSaved: !isSaved,
+      success: true 
+    });
+
+  } catch (error) {
+    console.error("Error in toggleSavePost controller: ", error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};

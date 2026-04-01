@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCommunityStore } from '../store/communityStore';
 import { useAuthStore } from '../store/authStore';
-import { Users, MapPin, Plus, X, Edit, LogOut } from 'lucide-react';
+import { Users, MapPin, Plus, X, Edit, LogOut, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Communities = () => {
@@ -15,6 +15,7 @@ const Communities = () => {
   const [desc, setDesc] = useState('');
 
   const [activeTab, setActiveTab] = useState('explore'); // explore, joined, created
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Update Modal State
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -77,6 +78,13 @@ const Communities = () => {
   if (activeTab === 'created') displayedCommunities = createdCommunities;
   else if (activeTab === 'joined') displayedCommunities = joinedCommunities;
   else displayedCommunities = exploreCommunities;
+
+  if (searchTerm.trim()) {
+    const term = searchTerm.toLowerCase();
+    displayedCommunities = displayedCommunities.filter(c => 
+      c.name.toLowerCase().includes(term) || (c.location && c.location.toLowerCase().includes(term))
+    );
+  }
 
   const renderCommunityCard = (c, type) => (
     <div key={c._id} className="bg-white shadow-xl shadow-brand-cyan/5 p-0 rounded-[2rem] flex flex-col h-full overflow-hidden hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 border border-gray-100">
@@ -214,6 +222,18 @@ const Communities = () => {
           </form>
         </div>
       )}
+
+      {/* Search Bar */}
+      <div className="relative w-full max-w-full">
+        <Search className="w-5 h-5 text-gray-400 absolute left-5 top-1/2 -translate-y-1/2" />
+        <input 
+          type="text"
+          placeholder="Search communities by name or destination..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="w-full bg-white border border-gray-100 shadow-sm rounded-2xl pl-12 pr-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 focus:border-brand-cyan text-gray-800 font-medium transition-all"
+        />
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-1.5 sm:gap-2 p-1.5 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-x-auto w-full max-w-[100vw] sm:w-fit lg:mx-0 snap-x custom-scrollbar">

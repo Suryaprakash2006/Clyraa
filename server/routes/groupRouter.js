@@ -4,7 +4,8 @@ import {
   getUserGroups,
   addMember,
   removeMember,
-  leaveGroup
+  leaveGroup,
+  deleteGroup
 } from "../controllers/groupController.js";
 
 import isAuthenticated from "../middleware/isAuthenticated.js";
@@ -16,5 +17,6 @@ router.get("/", isAuthenticated, getUserGroups);
 router.post("/:groupId/add-member", isAuthenticated, addMember);
 router.post("/:groupId/remove-member", isAuthenticated, removeMember);
 router.post("/:groupId/leave", isAuthenticated, leaveGroup);
+router.delete("/:groupId", isAuthenticated, deleteGroup);
 
 export default router;

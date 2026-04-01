@@ -1,26 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuthStore } from "../store/authStore";
 import { usePostStore } from "../store/postStore";
-import { useCommentStore } from "../store/commentsStore";
 import { useCommunityStore } from "../store/communityStore";
+import { useCommentStore } from "../store/commentsStore";
 import { CirclePlus, Heart, MessageCircle, MoreHorizontal, MapPin, Search, Send, Image as ImageIcon, Users, ChevronDown, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
+import PostCard from "../components/PostCard";
 
 const Feed = () => {
   const { user } = useAuthStore();
   const { posts, fetchPosts, likePost, createPost } = usePostStore();
   const { communities, fetchCommunities } = useCommunityStore();
-  const {
-    comments,
-    fetchComments,
-    addComment,
-    deleteComment,
-    updateComment,
-  } = useCommentStore();
-
-  const [activePost, setActivePost] = useState(null);
-  const [commentText, setCommentText] = useState({});
-  const [editing, setEditing] = useState(null);
-  const [editText, setEditText] = useState("");
+  const { comments, fetchComments } = useCommentStore();
 
   // Create Post State
   const [content, setContent] = useState("");
@@ -30,6 +22,31 @@ const Feed = () => {
   const dropdownRef = useRef(null);
 
   const [showLikes, setShowLikes] = useState(null);
+
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Search logic
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        const res = await api.get(`/auth/search?q=${searchQuery}`);
+        setSearchResults(res.data.users);
+      } catch (error) {
+        console.error("Search failed");
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -61,36 +78,6 @@ const Feed = () => {
     });
   }, [posts, comments, fetchComments]);
 
-  const isLiked = (post) =>
-    post.likes?.some((l) => l._id === user?._id);
-
-  // Add comment
-  const handleComment = async (postId) => {
-    const text = commentText[postId];
-    if (!text || !text.trim()) return;
-
-    await addComment(postId, text.trim());
-    setCommentText((prev) => ({ ...prev, [postId]: "" }));
-  };
-
-  // Delete comment
-  const handleDeleteComment = async (postId, commentId) => {
-    await deleteComment(postId, commentId);
-  };
-
-  // Start edit
-  const handleEditComment = (postId, comment) => {
-    setEditing({ postId, commentId: comment._id });
-    setEditText(comment.text);
-  };
-
-  // Update comment
-  const handleUpdateComment = async () => {
-    await updateComment(editing.postId, editing.commentId, editText);
-    setEditing(null);
-    setEditText("");
-  };
-
   // Create post
   const handleCreatePost = async (e) => {
     e.preventDefault();
@@ -116,7 +103,49 @@ const Feed = () => {
 
         {/* Left Column: ADD Post */}
         <div className="lg:w-[35%] xl:w-[30%] flex-shrink-0">
-          <div className="sticky top-28 bg-white rounded-3xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100/50">
+          <div className="sticky top-28 space-y-6 z-30">
+            
+            {/* Search Box */}
+            <div className="bg-white rounded-3xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100/50 relative">
+              <div className="relative">
+                <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="text" 
+                  placeholder="Find other travelers..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-gray-50 text-gray-800 rounded-2xl pl-12 pr-4 py-3 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 font-medium text-sm transition-all"
+                />
+              </div>
+
+              {/* Search Results Dropdown */}
+              {searchQuery && (
+                <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-2xl shadow-2xl shadow-gray-200/60 border border-gray-100 overflow-hidden max-h-64 overflow-y-auto z-40 custom-scrollbar">
+                  {isSearching ? (
+                    <div className="p-4 text-center text-sm font-bold text-gray-400 animate-pulse">Searching...</div>
+                  ) : searchResults.length > 0 ? (
+                    searchResults.map(u => (
+                      <div 
+                        key={u._id} 
+                        onClick={() => navigate(`/profile/${u._id}`)}
+                        className="flex items-center gap-3 p-3 hover:bg-gray-50 border-b border-gray-50 cursor-pointer transition-colors"
+                      >
+                        <img src={u.profile?.profilePic || `https://ui-avatars.com/api/?name=${u.name}`} className="w-10 h-10 rounded-full object-cover shadow-sm" />
+                        <div className="flex-1">
+                          <p className="text-sm font-black text-gray-800 leading-tight block">{u.name}</p>
+                          <p className="text-xs font-medium text-gray-500 truncate mt-0.5">{u.email}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-sm font-medium text-gray-400">No travelers found.</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Create Post Form */}
+            <div className="bg-white rounded-3xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100/50">
             <h2 className="text-xl font-black text-gray-800 flex items-center gap-3 mb-6">
               <div className="p-2.5 bg-brand-cyan/10 rounded-xl">
                 <CirclePlus className="w-6 h-6 text-brand-cyan" />
@@ -199,6 +228,7 @@ const Feed = () => {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
 
@@ -213,188 +243,9 @@ const Feed = () => {
               <p className="text-gray-500">Wait for other travelers to share their experiences.</p>
             </div>
           ) : (
-            filteredPosts.map((post) => {
-              const liked = isLiked(post);
-
-              return (
-                <div
-                  key={post._id}
-                  className="bg-white rounded-[2rem] shadow-lg shadow-gray-200/40 border border-gray-100 overflow-hidden flex flex-col hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-300 group"
-                >
-                  {/* Post Header */}
-                  <div className="flex items-center justify-between p-6 pb-4">
-                    <div className="flex gap-4 items-center">
-                      <div className="relative">
-                        <img
-                          src={post.postedBy?.profile?.profilePic || `https://ui-avatars.com/api/?name=${post.postedBy?.name}`}
-                          className="w-12 h-12 rounded-2xl object-cover shadow-sm border border-gray-100 group-hover:scale-105 transition-transform"
-                          alt="Avatar"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-gray-900 text-base font-black tracking-tight flex items-center gap-2">
-                          {post.postedBy?.name}
-                          {post.communityId && (
-                            <span className="bg-brand-fuchsia/10 text-brand-fuchsia text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md">
-                              {post.communityId.name}
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-xs text-brand-cyan font-bold flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3.5 h-3.5" /> {post.location}
-                        </p>
-                      </div>
-                    </div>
-                    <button className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-50 transition-colors">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Post Content */}
-                  <div className="px-6 pb-5 text-gray-700 text-base leading-relaxed whitespace-pre-line">
-                    {post.content}
-                  </div>
-
-                  {/* Post Images */}
-                  {post.images && post.images.length > 0 && (
-                    <div className="w-full h-[400px] lg:h-[500px] bg-gray-100 overflow-hidden relative">
-                      <img
-                        src={post.images[0]}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
-                        alt="Post Media"
-                      />
-                    </div>
-                  )}
-
-                  {/* Post Actions & Comments Area */}
-                  <div className="flex flex-col border-t border-gray-50/50 relative">
-                    {/* Action Bar */}
-                    <div className="flex gap-6 px-6 py-4 items-center bg-gray-50/30">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => likePost(post._id)}
-                          className="p-2 rounded-full hover:bg-red-50 transition-colors group/btn"
-                        >
-                          <Heart
-                            className={`w-6 h-6 transition-transform group-hover/btn:scale-110 ${liked ? "fill-red-500 text-red-500" : "text-gray-400 group-hover/btn:text-red-400"}`}
-                          />
-                        </button>
-                        {post.likes?.length > 0 && (
-                          <span
-                            onClick={() => setShowLikes(showLikes === post._id ? null : post._id)}
-                            className="text-sm font-bold text-gray-600 hover:text-gray-900 cursor-pointer pt-0.5"
-                          >
-                            {post.likes.length} {post.likes.length === 1 ? "like" : "likes"}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => setActivePost(activePost === post._id ? null : post._id)}
-                          className="p-2 rounded-full hover:bg-brand-cyan/10 transition-colors group/btn"
-                        >
-                          <MessageCircle className={`w-6 h-6 transition-transform group-hover/btn:scale-110 ${activePost === post._id ? "text-brand-cyan fill-brand-cyan/20" : "text-gray-400 group-hover/btn:text-brand-cyan"}`} />
-                        </button>
-                        <span className="text-sm font-bold text-gray-600 pt-0.5 cursor-pointer" onClick={() => setActivePost(activePost === post._id ? null : post._id)}>
-                          {(comments[post._id] || []).length} {(comments[post._id] || []).length === 1 ? "comment" : "comments"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Expandable Likes View */}
-                    <div className={`transition-all duration-300 overflow-hidden ${showLikes === post._id ? "max-h-40 border-t border-gray-100/50" : "max-h-0"}`}>
-                      <div className="px-6 py-4 bg-white flex flex-wrap gap-2 overflow-y-auto max-h-40">
-                        {post.likes?.map((u) => (
-                          <div key={u._id} className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default">
-                            <img
-                              src={u.profile?.profilePic || `https://ui-avatars.com/api/?name=${u.name}`}
-                              className="w-5 h-5 rounded-full object-cover"
-                            />
-                            <span className="text-xs font-bold text-gray-700">{u.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Expandable Comments View */}
-                    <div className={`transition-all duration-500 overflow-hidden bg-gray-50/50 ${activePost === post._id ? "max-h-[600px] border-t border-gray-100" : "max-h-0"}`}>
-                      <div className="flex flex-col h-full max-h-[400px]">
-                        {/* Comments List */}
-                        <div className="overflow-y-auto p-6 space-y-5 flex-1 custom-scrollbar">
-                          {(comments[post._id] || []).length === 0 ? (
-                            <p className="text-center text-sm font-medium text-gray-400 py-4">No comments yet. Start the conversation!</p>
-                          ) : (
-                            (comments[post._id] || []).map((c) => {
-                              const isOwner = c.userId?._id === user?._id;
-                              return (
-                                <div key={c._id} className="flex gap-3 group/comment">
-                                  <img
-                                    src={c.userId?.profile?.profilePic || `https://ui-avatars.com/api/?name=${c.userId?.name}`}
-                                    className="w-8 h-8 rounded-full shadow-sm"
-                                  />
-                                  <div className="flex-1">
-                                    <div className="bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] px-4 py-3 rounded-2xl rounded-tl-sm inline-block min-w-[60%]">
-                                      <span className="text-brand-cyan text-xs font-black block mb-1 tracking-tight">
-                                        {c.userId?.name}
-                                      </span>
-
-                                      {editing?.commentId === c._id ? (
-                                        <div className="mt-2">
-                                          <textarea
-                                            value={editText}
-                                            onChange={(e) => setEditText(e.target.value)}
-                                            className="w-full p-2 bg-gray-50 text-gray-800 rounded-lg min-h-[60px] resize-none outline-none focus:ring-2 focus:ring-brand-cyan/50 border border-gray-200 text-sm"
-                                          />
-                                          <div className="flex gap-4 text-xs mt-2 font-bold">
-                                            <button onClick={handleUpdateComment} className="text-brand-cyan hover:text-brand-cyan/80">Save</button>
-                                            <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-600">Cancel</button>
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <p className="text-gray-700 text-sm">{c.text}</p>
-                                      )}
-                                    </div>
-
-                                    {isOwner && !editing && (
-                                      <div className="flex gap-4 text-[11px] font-bold mt-1.5 ml-2 text-gray-400 opacity-0 group-hover/comment:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEditComment(post._id, c)} className="hover:text-brand-cyan">Edit</button>
-                                        <button onClick={() => handleDeleteComment(post._id, c._id)} className="hover:text-red-500">Delete</button>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })
-                          )}
-                        </div>
-
-                        {/* Add Comment Input */}
-                        <div className="p-4 bg-white border-t border-gray-100 flex gap-3 items-center sticky bottom-0">
-                          <div className="flex-1 relative">
-                            <input
-                              value={commentText[post._id] || ""}
-                              onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleComment(post._id) }}
-                              placeholder="Add a comment..."
-                              className="w-full bg-gray-50 text-gray-800 px-5 py-3 rounded-full border border-gray-200 focus:outline-none focus:bg-white focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan pr-12 transition-all shadow-inner text-sm font-medium"
-                            />
-                            <button
-                              onClick={() => handleComment(post._id)}
-                              disabled={!commentText[post._id]?.trim()}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-brand-cyan text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-cyan/90 transition-colors shadow-sm"
-                            >
-                              <Send className="w-3.5 h-3.5 -translate-x-[1px] translate-y-[1px]" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              );
-            })
+            filteredPosts.map((post) => (
+              <PostCard key={post._id} post={post} />
+            ))
           )}
         </div>
       </div>

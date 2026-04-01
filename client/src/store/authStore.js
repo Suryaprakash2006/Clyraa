@@ -57,6 +57,46 @@ export const useAuthStore = create(
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
   updateUserLocal: (updates) => set((state) => ({ user: { ...state.user, ...updates } })),
+
+  fetchUserProfile: async (id) => {
+    try {
+      const res = await api.get(`/auth/profile/details/${id}`);
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching profile", error);
+      throw error;
+    }
+  },
+
+  toggleFollowUser: async (id) => {
+    try {
+      const res = await api.post(`/auth/profile/${id}/follow`);
+      return res.data;
+    } catch (error) {
+      console.error("Error toggling follow", error);
+      throw error;
+    }
+  },
+
+  toggleSavePost: async (postId) => {
+    try {
+      const res = await api.post(`/auth/profile/save-post/${postId}`);
+      return res.data;
+    } catch (error) {
+      console.error("Error toggling save post", error);
+      throw error;
+    }
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      const res = await api.put("/auth/profile/password", { currentPassword, newPassword });
+      return res.data;
+    } catch (error) {
+      console.error("Error changing password", error);
+      throw error;
+    }
+  },
     }),
     {
       name: "auth-storage", // unique name for localStorage
