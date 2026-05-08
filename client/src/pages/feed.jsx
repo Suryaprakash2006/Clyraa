@@ -7,6 +7,7 @@ import { CirclePlus, Heart, MessageCircle, MoreHorizontal, MapPin, Search, Send,
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import PostCard from "../components/PostCard";
+import toast from "react-hot-toast";
 
 const Feed = () => {
   const { user } = useAuthStore();
@@ -216,7 +217,7 @@ const Feed = () => {
               </div>
 
               <div className="pt-2 flex justify-between items-center">
-                <button type="button" className="p-3 text-brand-cyan hover:bg-brand-cyan/10 rounded-full transition-colors hidden lg:block">
+                <button onClick={() => toast.error("This feature will be available shortly.")} type="button" className="p-3 text-brand-cyan hover:bg-brand-cyan/10 rounded-full transition-colors hidden lg:block">
                   <ImageIcon className="w-5 h-5" />
                 </button>
                 <button

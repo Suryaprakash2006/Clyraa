@@ -97,9 +97,9 @@ export default function PostCard({ post }) {
             </p>
           </div>
         </div>
-        <button className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-50 transition-colors">
+        {/* <button className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-50 transition-colors">
           <MoreHorizontal className="w-5 h-5" />
-        </button>
+        </button> */}
       </div>
 
       {/* Post Content */}

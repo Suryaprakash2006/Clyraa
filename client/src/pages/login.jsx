@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Mail, Lock, ArrowRight, Plane } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,56 +22,112 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-bg p-4 relative overflow-hidden">
-      {/* Background glowing orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-cyan/20 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-brand-purple/20 rounded-full blur-[100px] pointer-events-none"></div>
-      
-      <div className="glass-panel w-full max-w-md p-8 rounded-2xl relative z-10 border-t border-white/10">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-cyan to-brand-fuchsia inline-block mb-2">Welcome Back</h1>
-          <p className="text-slate-400">Enter your credentials to access Clyraa</p>
+    <div className="min-h-screen flex bg-gray-50 rounded-2xl">
+
+      {/* Left decorative panel */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-brand-cyan via-blue-500 to-brand-purple items-center justify-center p-16 rounded-s-2xl">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-white blur-[80px]"></div>
+          <div className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-white blur-[100px]"></div>
         </div>
+        <div className="relative z-10 text-white max-w-md">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+              <Plane className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-3xl font-black tracking-tight">Clyraa</span>
+          </div>
+          <h2 className="text-4xl font-black leading-tight mb-6">
+            Your next adventure starts here.
+          </h2>
+          <p className="text-white/70 text-lg leading-relaxed mb-10">
+            Join thousands of travelers who plan smarter, connect deeper, and explore together.
+          </p>
+          <div className="flex flex-col gap-4">
+            {[
+              'Plan & track group trips',
+              'Join travel communities',
+              'Share your adventures',
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+                  <ArrowRight className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-white/90 font-medium">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-            <input 
-              type="email" 
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-dark-bg/50 border border-dark-border rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 focus:border-transparent transition-all"
-              placeholder="Enter your email"
-            />
+      {/* Right form panel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md">
+
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-10 lg:hidden">
+            <div className="w-9 h-9 rounded-xl bg-brand-cyan flex items-center justify-center">
+              <Plane className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-xl font-black text-gray-800">Clyraa</span>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-            <input 
-              type="password"
-              required 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-dark-bg/50 border border-dark-border rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-purple/50 focus:border-transparent transition-all"
-              placeholder="Enter your password"
-            />
+          <div className="mb-10">
+            <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Welcome back</h1>
+            <p className="text-gray-500 font-medium">Sign in to continue your journey</p>
           </div>
 
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-purple text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(6,182,212,0.3)] mt-8"
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            ) : "Sign In"}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-gray-700">Email address</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-2xl pl-11 pr-4 py-3.5 text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-cyan/40 focus:border-brand-cyan transition-all shadow-sm"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
 
-        <p className="mt-8 text-center text-slate-400">
-          Don't have an account? <Link to="/register" className="text-brand-cyan hover:underline font-medium">Create one</Link>
-        </p>
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-gray-700">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-2xl pl-11 pr-4 py-3.5 text-gray-800 font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-cyan/40 focus:border-brand-cyan transition-all shadow-sm"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-cyan to-blue-500 text-white font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-brand-cyan/25 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 mt-2"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <>Sign In <ArrowRight className="w-4 h-4" /></>
+              )}
+            </button>
+          </form>
+
+          <p className="mt-8 text-center text-gray-500 font-medium">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-brand-cyan font-bold hover:underline">
+              Create one free
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

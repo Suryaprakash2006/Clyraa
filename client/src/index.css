@@ -11,6 +11,15 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 @layer base {
   body {
     @apply bg-dark-bg text-slate-100 font-sans tracking-wide antialiased selection:bg-brand-purple selection:text-white bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-dark-surface to-dark-bg min-h-screen;

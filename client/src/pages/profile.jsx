@@ -139,7 +139,7 @@ export default function Profile() {
               />
             </div>
             {isSelf && (
-              <button onClick={() => toast.error("Avatar upload to be connected with Cloudinary")} className="absolute bottom-2 right-2 p-2 bg-brand-cyan text-white rounded-full shadow-lg hover:bg-brand-cyan/90 transition-transform hover:scale-105">
+              <button onClick={() => toast.error("This feature will be available shortly.")} className="absolute bottom-2 right-2 p-2 bg-brand-cyan text-white rounded-full shadow-lg hover:bg-brand-cyan/90 transition-transform hover:scale-105">
                 <Plus className="w-4 h-4" />
               </button>
             )}
