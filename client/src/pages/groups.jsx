@@ -39,7 +39,7 @@ const Groups = () => {
   useEffect(() => { fetchUserGroups(); }, [fetchUserGroups]);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:8000", { withCredentials: true });
+    const newSocket = io("https://clyraa.onrender.com", { withCredentials: true });
     setSocket(newSocket);
     newSocket.on("receive_message", (data) => { addMessage(data); });
     newSocket.on("connect_error", (err) => { console.error("Socket error: ", err.message); });
