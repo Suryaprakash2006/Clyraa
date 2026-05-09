@@ -31,7 +31,7 @@ app.use(cookieParser());
 
 
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: ["https://clyraa-5iei.onrender.com"],
   credentials: true,
 };
 
@@ -50,7 +50,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: ["https://clyraa-5iei.onrender.com"],
     credentials: true,
   },
 });
